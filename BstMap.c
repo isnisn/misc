@@ -1,15 +1,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <string.h>
 
 /** BstMap **/
 
 void recursive_insert();
-void* get();
 
 typedef struct Node_t {
-    void* key; // void pointer since we dont know what type key is
-    void* value; // Same here
+    char* key; 
+    int value;
     struct Node_t *left;
     struct Node_t *right;
 } Node_t;
@@ -19,76 +19,123 @@ typedef struct BstMap {
 
 } BstMap;
 
-Node_t* create_node(void* key, void* value) {
+Node_t* create_node(char* key, int value) {
     Node_t *node = malloc(sizeof(Node_t));
-    node->key = key;
-    node->value = value;
 
-    // Return a pointer to a Node_t struct
+    node->key = strdup(key);
+    node->value = value;
+    node->left = node->right = NULL;
+
     return node;
 }
 
 void print_tree(Node_t *curr_node) {
-    if (curr_node->left != NULL) {
+    if (curr_node->left) {
         print_tree(curr_node->left);
     }
     
-    printf("%d \n", (int)(uintptr_t)curr_node->key);
+    printf("%s\n", curr_node->key);
 
-    if (curr_node->right != NULL) {
+    if (curr_node->right) {
         print_tree(curr_node->right);
     }
 }
 
-// We must also pass the node, tbi
-void recursive_insert(Node_t *curr_node, void* key, void* val) {
+void recursive_insert(Node_t *curr_node, char* key, int val) {
 
-    if(key < curr_node->key) {
-        printf("Go left\n");
-        // Check if left exist, if it doesnt, create it!
+    int result = strcmp(key, curr_node->key);
+
+    if(result < 0) {
         if(!curr_node->left) {
-            printf("Left node on current node exist, creating \n");
             curr_node->left = create_node(key, val);
         } else {
-            //Node does exist, traverse.
             recursive_insert(curr_node->left, key, val);
         }
-    }
-
-    // Duplicate or key found.
-    if(key == curr_node->key) {
-        printf("Duplicate\n");
-    }
-
-    if(key > curr_node->key) {
-        printf("Go Right\n");
-
+    } else if(result > 0) {
         if(!curr_node->right) {
-            printf("Right node on current node exist, creating \n");
             curr_node->right = create_node(key, val);
+            return;
+
         } else {
-            //Node does exist, traverse.
             recursive_insert(curr_node->right, key, val);
         }
+    } else {
+        curr_node->value++;
     }
+}
 
+Node_t* find(char* key, Node_t *curr_node) {
+    int result = strcmp(key, curr_node->key);
+
+    if(result < 0) {
+        if(!curr_node->left) {
+            return NULL; // Key cant be found, it shouldve been down this path
+        } else {
+            return find(key, curr_node->left);
+        }
+    } else if(result > 0) {
+        if(!curr_node->right) {
+            return NULL; // Key cant be found, it shouldve been down this path
+        } else {
+            return find(key, curr_node->right);
+        }
+    } else {
+        return curr_node;
+    }
+}
+
+void free_tree(Node_t *node) {
+    if (node) {
+        free_tree(node->left);
+        free_tree(node->right);
+        free(node->key);
+        free(node);
+    }
 }
 
 int main() {
 
     BstMap *map = malloc(sizeof(BstMap));
-    
+    int cnt = 0;
+
     // Create the root node
-    map->root = create_node((void*)40,(void*)2);
+    map->root = create_node("Hejhej",2);
 
-    // Pass pointer to root-node
+    FILE *file;
+    char *word = NULL;
+    size_t len = 0;
+    int val = 1;
 
-    recursive_insert(map->root, (void*)20,(void*)2);
-    recursive_insert(map->root, (void*)25,(void*)2);
-    recursive_insert(map->root, (void*)50,(void*)2);
-    recursive_insert(map->root, (void*)10,(void*)2);
+    file = fopen("news_words.txt", "r");
+    if (file == NULL) {
+        perror("Error opening the file");
+        exit(EXIT_FAILURE);
+    }
 
-    print_tree(map->root);
+    while (getline(&word, &len, file) != -1) {
+        // Remove \n
+        word[strlen(word) - 1] = 0;
+
+            recursive_insert(map->root, word, val);
+            ++cnt;
+    }
+
+    printf("All done, inserted %d words \n\n", cnt);
+
+    /* Print the entire tree's keys */
+    //print_tree(map->root);
+
+    /* FIND A KEY k*/
+    char* k = "Glitterfittans";
+    Node_t *found_node = find(k, map->root);
+    if(found_node) {
+
+        printf("Key: %s has %d occurrences!", found_node->key, found_node->value);
+    }
+
+    // Cleanup
+    free_tree(map->root);
+    free(map);
 
     return 0;
 }
