@@ -64,20 +64,21 @@ void recursive_insert(Node_t *curr_node, char* key, int val) {
     }
 }
 
+
 Node_t* find(char* key, Node_t *curr_node) {
     int result = strcmp(key, curr_node->key);
 
     if(result < 0) {
         if(!curr_node->left) {
-            return NULL; // Key cant be found, it shouldve been down this path
+            return NULL; // Key can't be found, it should've been down this path
         } else {
-            find(key, curr_node->left);
+             find(key, curr_node->left); // Return the result of the recursive call
         }
     } else if(result > 0) {
         if(!curr_node->right) {
-            return NULL; // Key cant be found, it shouldve been down this path
+            return NULL; // Key can't be found, it should've been down this path
         } else {
-            find(key, curr_node->right);
+             find(key, curr_node->right); // Return the result of the recursive call
         }
     } else {
         return curr_node;
@@ -105,7 +106,7 @@ int main() {
     // Create the root node
     map->root = create_node("ItSmellsGood",2);
     
-    FILE *file = fopen("brian_words.txt", "r");
+    FILE *file = fopen("news_words.txt", "r");
     if (file == NULL) {
         perror("Error opening the file");
         exit(EXIT_FAILURE);
@@ -125,8 +126,9 @@ int main() {
     //print_tree(map->root);
 
     /* FIND A KEY k*/
-    char* k = "Arne";
+    char* k = "Brian";
     Node_t *found_node = find(k, map->root);
+
     if(found_node) {
 
         printf("Key: %s has %d occurrences! \n", found_node->key, found_node->value);
