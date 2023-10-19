@@ -71,13 +71,13 @@ Node_t* find(char* key, Node_t *curr_node) {
         if(!curr_node->left) {
             return NULL; // Key cant be found, it shouldve been down this path
         } else {
-            return find(key, curr_node->left);
+            find(key, curr_node->left);
         }
     } else if(result > 0) {
         if(!curr_node->right) {
             return NULL; // Key cant be found, it shouldve been down this path
         } else {
-            return find(key, curr_node->right);
+            find(key, curr_node->right);
         }
     } else {
         return curr_node;
@@ -95,18 +95,17 @@ void free_tree(Node_t *node) {
 
 int main() {
 
-    BstMap *map = malloc(sizeof(BstMap));
+    size_t len = 0;
+    char *word = NULL;
+    int val = 1;
     int cnt = 0;
 
+    BstMap *map = malloc(sizeof(BstMap));
+
     // Create the root node
-    map->root = create_node("Hejhej",2);
-
-    FILE *file;
-    char *word = NULL;
-    size_t len = 0;
-    int val = 1;
-
-    file = fopen("news_words.txt", "r");
+    map->root = create_node("ItSmellsGood",2);
+    
+    FILE *file = fopen("brian_words.txt", "r");
     if (file == NULL) {
         perror("Error opening the file");
         exit(EXIT_FAILURE);
@@ -126,11 +125,13 @@ int main() {
     //print_tree(map->root);
 
     /* FIND A KEY k*/
-    char* k = "Glitterfittans";
+    char* k = "Arne";
     Node_t *found_node = find(k, map->root);
     if(found_node) {
 
-        printf("Key: %s has %d occurrences!", found_node->key, found_node->value);
+        printf("Key: %s has %d occurrences! \n", found_node->key, found_node->value);
+    } else {
+        printf("Key: %s doesnt exist! \n", k);
     }
 
     // Cleanup
